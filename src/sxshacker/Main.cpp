@@ -2,10 +2,10 @@
 //
 
 #include "stdafx.h"
-#include "sxshacker.h"
 
 
 
+#include "resource.h"
 #include "MainDlg.h"
 
 

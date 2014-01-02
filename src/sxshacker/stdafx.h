@@ -17,10 +17,15 @@
 #include <memory.h>
 #include <tchar.h>
 
+#include <ShellAPI.h>
 
-
+#include <atlstr.h>
 #include <atlbase.h>
+
+
 #include "..\WTL80\include\atlapp.h"
+#include "..\WTL80\include\atlctrls.h"
+#include "..\WTL80\include\atlctrlx.h"
 #include "..\WTL80\include\atlwinx.h"
 
 

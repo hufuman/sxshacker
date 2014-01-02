@@ -7,7 +7,9 @@
 
 
 #include "AboutDlg.h"
-
+#include "Util.h"
+#include "SxSParser.h"
+#include "WndLayout.h"
 
 
 class CMainDlg : public CDialogImpl<CMainDlg>, public CMessageFilter
@@ -27,9 +29,15 @@ public:
 
 	BEGIN_MSG_MAP(CMainDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		COMMAND_ID_HANDLER(IDOK, OnOK)
+
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
+
+        COMMAND_ID_HANDLER(IDC_BTN_BROWSE, OnBtnBrowse)
+        COMMAND_ID_HANDLER(IDC_BTN_EXPORT, OnBtnExport)
+
 		MESSAGE_HANDLER(WM_SYSCOMMAND, OnSysCommand)
+        MESSAGE_HANDLER(WM_DROPFILES, OnDropFiles)
+
 	END_MSG_MAP()
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -67,6 +75,13 @@ public:
 		CMessageLoop* pLoop = _Module.GetMessageLoop();
 		pLoop->AddMessageFilter(this);
 
+        // 
+        Util::EnableDrop(m_hWnd);
+
+        m_Tree.Attach(GetDlgItem(IDC_TREE_DEPENDENCIES));
+
+        InitLayout();
+
 		return TRUE;
 	}
 
@@ -80,6 +95,52 @@ public:
 		CloseDialog(wID);
 		return 0;
 	}
+
+    LRESULT OnBtnBrowse(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    {
+        CString strResult = Util::BrowserForFolder(m_hWnd);
+
+        if(!strResult.IsEmpty())
+        {
+            EnableStep3(TRUE);
+            GetDlgItem(IDC_EDIT_EXPORT_PATH).SetWindowText(strResult);
+        }
+
+        return 0;
+    }
+
+    LRESULT OnBtnExport(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    {
+        CString strExportPath;
+        GetDlgItem(IDC_EDIT_EXPORT_PATH).GetWindowText(strExportPath);
+
+        if(strExportPath.IsEmpty())
+        {
+            CString strMsg;
+            strMsg.LoadString(IDS_ERR_EMPTY_EXPORT_PATH);
+            MessageBox(strMsg);
+            return 0;
+        }
+
+        DWORD dwAttr = ::GetFileAttributes(strExportPath);
+        if(INVALID_FILE_ATTRIBUTES == dwAttr || ((dwAttr & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY))
+        {
+            CString strMsg;
+            strMsg.LoadString(IDS_ERR_NOT_DIRECTORY);
+            MessageBox(strMsg);
+            return 0;
+        }
+
+        CString strMsg;
+        if(!m_SxsParser.Export(strExportPath, strMsg))
+        {
+            if(strMsg.IsEmpty())
+                strMsg.LoadString(IDS_ERR_EXPORT);
+            MessageBox(strMsg);
+            return 0;
+        }
+        return 0;
+    }
 
 	void CloseDialog(int nVal)
 	{
@@ -101,4 +162,138 @@ public:
 
 		return 0;
 	}
+
+    LRESULT OnDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
+    {
+        bHandled = TRUE;
+        HDROP hDrop = reinterpret_cast<HDROP>(wParam);
+
+        TCHAR szPath[MAX_PATH * 2] = {0};
+        UINT uCount = ::DragQueryFile(hDrop, 0xFFFFFFFF, szPath, _countof(szPath));
+        if(uCount == 0)
+        {
+            CString strMsg;
+            strMsg.LoadString(IDS_NO_FILE_DROPPED);
+            MessageBox(strMsg);
+            return 0;
+        }
+
+        EnableStep2(FALSE);
+        EnableStep3(FALSE);
+
+        BOOL bResult = TRUE;
+        m_SxsParser.Clear();
+        for(UINT i=0; i<uCount; ++ i)
+        {
+            if(::DragQueryFile(hDrop, i, szPath, _countof(szPath)) > 0)
+            {
+                bResult = m_SxsParser.AddFile(szPath) && bResult;
+            }
+        }
+
+        if(!bResult)
+        {
+            CString strMsg;
+            strMsg.LoadString(IDS_ERR_SXS_PARSE);
+            MessageBox(strMsg);
+
+            if(m_SxsParser.GetSxSList().GetSize() == 0)
+                return 0;
+        }
+
+        // check if no dependencies needed
+        if(m_SxsParser.GetSxSList().GetSize() == 0)
+        {
+            CString strMsg;
+            strMsg.LoadString(IDS_MSG_NO_DEPENDENCIES);
+            MessageBox(strMsg);
+            return 0;
+        }
+
+        GenerateTree();
+
+        // Enable Next Step
+        EnableStep2(TRUE);
+
+        return 0;
+    }
+
+    void EnableStep2(BOOL bEnable)
+    {
+        m_Tree.EnableWindow(bEnable);
+        GetDlgItem(IDC_BTN_BROWSE).EnableWindow(bEnable);
+        // GetDlgItem(IDC_EDIT_EXPORT_PATH).EnableWindow(bEnable);
+
+        if(bEnable && GetDlgItem(IDC_EDIT_EXPORT_PATH).GetWindowTextLength() > 0)
+            EnableStep3(TRUE);
+    }
+
+    void EnableStep3(BOOL bEnable)
+    {
+        GetDlgItem(IDC_BTN_EXPORT).EnableWindow(bEnable);
+    }
+
+    void GenerateTree()
+    {
+        m_Tree.DeleteAllItems();
+
+        CString strTemp;
+        const SxSList& list = m_SxsParser.GetSxSList();
+        UINT uCount = list.GetSize();
+        for(UINT i=0; i<uCount; ++ i)
+        {
+            const CSxSItem& item = list[i];
+
+            // Item
+            strTemp = item.strName;
+            if(item.bIsIgnoreItem)
+            {
+                strTemp += _T(" -- (Ignored)");
+            }
+
+            HTREEITEM hItem = m_Tree.InsertItem(strTemp, NULL, NULL);
+
+            // Type
+            strTemp = _T("Type: ") + item.strType;
+            m_Tree.InsertItem(strTemp, hItem, NULL);
+
+            // Version
+            strTemp = _T("Version: ") + item.strVersion;
+            m_Tree.InsertItem(strTemp, hItem, NULL);
+
+            // KeyToken
+            strTemp = _T("KeyToken: ") + item.strKeyToken;
+            m_Tree.InsertItem(strTemp, hItem, NULL);
+
+            // ProcessArch
+            strTemp = _T("ProcessArch: ") + item.strProcessor;
+            m_Tree.InsertItem(strTemp, hItem, NULL);
+
+            // Files
+            HTREEITEM hFile = m_Tree.InsertItem(_T("Files"), hItem, NULL);
+            UINT uSize = item.listFiles.GetSize();
+            for(UINT i=0; i<uSize; ++ i)
+            {
+                m_Tree.InsertItem(item.listFiles[i], hFile, NULL);
+            }
+        }
+    }
+
+    // Layout
+    void InitLayout()
+    {
+        m_WndLayout.Init(m_hWnd);
+        m_WndLayout.AddControlById(IDC_LABEL_STEP1, Layout_Top | Layout_Left);
+        m_WndLayout.AddControlById(IDC_LABEL_STEP2, Layout_Top | Layout_Left);
+        m_WndLayout.AddControlById(IDC_TREE_DEPENDENCIES, Layout_VFill | Layout_HFill);
+        m_WndLayout.AddControlById(IDC_LABEL_STEP3, Layout_Bottom | Layout_Left);
+        m_WndLayout.AddControlById(IDC_EDIT_EXPORT_PATH, Layout_Bottom | Layout_HFill);
+        m_WndLayout.AddControlById(IDC_BTN_BROWSE, Layout_Bottom | Layout_Right);
+        m_WndLayout.AddControlById(IDC_BTN_EXPORT, Layout_Bottom | Layout_Right);
+    }
+
+private:
+    CTreeViewCtrl   m_Tree;
+    CSxSParser      m_SxsParser;
+    CWndLayout      m_WndLayout;
 };
