@@ -88,6 +88,17 @@ BOOL CSxSParser::Export(LPCTSTR szExportPath, CString& strMsg) const
 
     CString strSxSFolder, strSxSFile, strTag, strDest;
     UINT uCount = list.GetSize();
+
+    strSxSFolder = _T("C:\\Windows\\winsxs\\");
+    strSxSFile = _T("C:\\Windows\\winsxs\\Manifests\\");
+
+    TCHAR szBuffer[MAX_PATH];
+    if(::GetSystemDirectory(szBuffer, MAX_PATH) > 0)
+    {
+        strSxSFile.SetAt(0, szBuffer[0]);
+        strSxSFile.SetAt(0, szBuffer[0]);
+    }
+
     for(UINT i=0; i<uCount; ++ i)
     {
         const CSxSItem& item = m_SxSList[i];
@@ -105,9 +116,6 @@ BOOL CSxSParser::Export(LPCTSTR szExportPath, CString& strMsg) const
         strTag += item.strKeyToken;
         strTag += _T("_");
         strTag += item.strVersion;
-
-        strSxSFolder = _T("C:\\Windows\\winsxs\\");
-        strSxSFile = _T("C:\\Windows\\winsxs\\Manifests\\");
 
         strDest = strExportPath;
         if(!ExportFolder(strTag, item.strName, strSxSFolder, strDest, strMsg)
