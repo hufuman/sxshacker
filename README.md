@@ -15,3 +15,8 @@ Developer always complain that their software can't run at users' computer. Once
 In most case, that means you need to publish sxs or crt or assembly or side-by-side stuff with your software.
   
 SxSHacker is used to find all proper stuff for you software.
+
+
+Latest version downloads:
+
+[32-bit](https://github.com/hufuman/sxshacker/blob/master/sxshacker_x32.exe?raw=true)
