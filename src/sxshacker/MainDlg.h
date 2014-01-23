@@ -75,6 +75,8 @@ public:
 		CMessageLoop* pLoop = _Module.GetMessageLoop();
 		pLoop->AddMessageFilter(this);
 
+        m_strAppName.LoadString(IDS_APP_NAME);
+
         // 
         Util::EnableDrop(m_hWnd);
 
@@ -118,7 +120,7 @@ public:
         {
             CString strMsg;
             strMsg.LoadString(IDS_ERR_EMPTY_EXPORT_PATH);
-            MessageBox(strMsg);
+            MessageBox(strMsg, m_strAppName, MB_OK | MB_ICONERROR);
             return 0;
         }
 
@@ -127,16 +129,20 @@ public:
         {
             CString strMsg;
             strMsg.LoadString(IDS_ERR_NOT_DIRECTORY);
-            MessageBox(strMsg);
+            MessageBox(strMsg, m_strAppName, MB_OK | MB_ICONERROR);
             return 0;
         }
 
         CString strMsg;
-        if(!m_SxsParser.Export(strExportPath, strMsg))
+        if(m_SxsParser.Export(strExportPath, strMsg))
         {
-            if(strMsg.IsEmpty())
-                strMsg.LoadString(IDS_ERR_EXPORT);
-            MessageBox(strMsg);
+            strMsg.LoadString(IDS_OK_EXPORT);
+            MessageBox(strMsg, m_strAppName, MB_OK | MB_ICONINFORMATION);
+        }
+        else
+        {
+            strMsg.LoadString(IDS_ERR_EXPORT);
+            MessageBox(strMsg, m_strAppName, MB_OK | MB_ICONERROR);
             return 0;
         }
         return 0;
@@ -174,7 +180,7 @@ public:
         {
             CString strMsg;
             strMsg.LoadString(IDS_NO_FILE_DROPPED);
-            MessageBox(strMsg);
+            MessageBox(strMsg, m_strAppName, MB_OK | MB_ICONERROR);
             return 0;
         }
 
@@ -183,11 +189,19 @@ public:
 
         BOOL bResult = TRUE;
         m_SxsParser.Clear();
+        CString strLastPath;
         for(UINT i=0; i<uCount; ++ i)
         {
             if(::DragQueryFile(hDrop, i, szPath, _countof(szPath)) > 0)
             {
-                bResult = m_SxsParser.AddFile(szPath) && bResult;
+                if(!m_SxsParser.AddFile(szPath))
+                {
+                    bResult = FALSE;
+                }
+                else
+                {
+                    strLastPath = szPath;
+                }
             }
         }
 
@@ -195,7 +209,7 @@ public:
         {
             CString strMsg;
             strMsg.LoadString(IDS_ERR_SXS_PARSE);
-            MessageBox(strMsg);
+            MessageBox(strMsg, m_strAppName, MB_OK | MB_ICONERROR);
 
             if(m_SxsParser.GetSxSList().GetSize() == 0)
                 return 0;
@@ -206,7 +220,7 @@ public:
         {
             CString strMsg;
             strMsg.LoadString(IDS_MSG_NO_DEPENDENCIES);
-            MessageBox(strMsg);
+            MessageBox(strMsg, m_strAppName, MB_OK | MB_ICONERROR);
             return 0;
         }
 
@@ -214,6 +228,18 @@ public:
 
         // Enable Next Step
         EnableStep2(TRUE);
+
+        CWindow wndExportPath = GetDlgItem(IDC_EDIT_EXPORT_PATH);
+        if(wndExportPath.GetWindowTextLength() == 0)
+        {
+            int pos = strLastPath.ReverseFind(_T('\\'));
+            if(pos != -1)
+            {
+                strLastPath = strLastPath.Mid(0, pos);
+                wndExportPath.SetWindowText(strLastPath);
+                EnableStep3(TRUE);
+            }
+        }
 
         return 0;
     }
@@ -296,4 +322,5 @@ private:
     CTreeViewCtrl   m_Tree;
     CSxSParser      m_SxsParser;
     CWndLayout      m_WndLayout;
+    CString         m_strAppName;
 };

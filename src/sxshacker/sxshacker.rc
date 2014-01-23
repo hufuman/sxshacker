@@ -83,6 +83,8 @@ BEGIN
     IDS_ERR_COPY_FOLDERS    "Error encountered when copying folders."
     IDS_ERR_COPY_FILES      "Error encountered when copying files."
     IDS_ERR_MAKE_EMPTY_FOLDER "Error encountered when remove directories."
+    IDS_OK_EXPORT           "Export WinSXS Successfully."
+    IDS_APP_NAME            "SxSHacker"
 END
 
 #endif    // Chinese (P.R.C.) resources

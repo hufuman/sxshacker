@@ -19,6 +19,8 @@
 #define IDS_ERR_COPY_FOLDERS            138
 #define IDS_ERR_COPY_FILES              139
 #define IDS_ERR_MAKE_EMPTY_FOLDER       140
+#define IDS_OK_EXPORT                   141
+#define IDS_APP_NAME                    142
 #define IDC_EDIT_EXPORT_PATH            1004
 #define IDC_BTN_EXPORT                  1005
 #define IDC_BTN_BROWSE                  1006
