@@ -32,6 +32,7 @@ public:
 
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
 
+        COMMAND_ID_HANDLER(IDC_BTN_REFRESH, OnBtnRefresh)
         COMMAND_ID_HANDLER(IDC_BTN_BROWSE, OnBtnBrowse)
         COMMAND_ID_HANDLER(IDC_BTN_EXPORT, OnBtnExport)
 
@@ -97,6 +98,25 @@ public:
 		CloseDialog(wID);
 		return 0;
 	}
+
+    LRESULT OnBtnRefresh(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    {
+        // whether tree are generated already
+        if(m_Tree.GetCount() == 0)
+            return 0;
+
+        m_Tree.DeleteAllItems();
+        BOOL bResult = m_SxsParser.Reparse();
+        GenerateTree();
+        if(!bResult)
+        {
+            CString strMsg;
+            strMsg.LoadString(IDS_ERR_REPARSE);
+            MessageBox(strMsg, m_strAppName, MB_OK | MB_ICONERROR);
+        }
+
+        return 0;
+    }
 
     LRESULT OnBtnBrowse(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
     {

@@ -41,6 +41,7 @@ public:
     void    Clear();
     BOOL    AddFile(LPCTSTR szFilePath);
 
+    BOOL    Reparse();
     const SxSList& GetSxSList() const;
 
     BOOL    Export(LPCTSTR szExportPath, CString& strMsg) const;
@@ -61,5 +62,6 @@ private:
     BOOL IsIgnoreItem(const CSxSItem& item) const;
 
 private:
+    StringList  m_arrFiles;
     SxSList m_SxSList;
 };

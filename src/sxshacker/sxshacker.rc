@@ -43,6 +43,7 @@ BEGIN
     PUSHBUTTON      "&Export",IDC_BTN_EXPORT,258,173,50,14,WS_DISABLED
     PUSHBUTTON      "&Browse",IDC_BTN_BROWSE,258,156,50,14,WS_DISABLED
     CONTROL         "",IDC_TREE_DEPENDENCIES,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_DISABLED | WS_BORDER | WS_HSCROLL | WS_TABSTOP,6,30,300,108
+    PUSHBUTTON      "&Refresh",IDC_BTN_REFRESH,260,7,50,14
 END
 
 
@@ -85,6 +86,7 @@ BEGIN
     IDS_ERR_MAKE_EMPTY_FOLDER "Error encountered when remove directories."
     IDS_OK_EXPORT           "Export WinSXS Successfully."
     IDS_APP_NAME            "SxSHacker"
+    IDS_ERR_REPARSE         "Errors encoutered when reparsing"
 END
 
 #endif    // Chinese (P.R.C.) resources

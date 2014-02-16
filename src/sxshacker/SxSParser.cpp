@@ -16,12 +16,26 @@ CSxSParser::~CSxSParser(void)
 
 void CSxSParser::Clear()
 {
+    m_arrFiles.RemoveAll();
     m_SxSList.RemoveAll();
 }
 
 BOOL CSxSParser::AddFile(LPCTSTR szFilePath)
 {
+    m_arrFiles.Add(szFilePath);
     return ParseFile(szFilePath);
+}
+
+BOOL CSxSParser::Reparse()
+{
+    BOOL bResult = TRUE;
+    m_SxSList.RemoveAll();
+    int nCount = m_arrFiles.GetSize();
+    for(int i=0; i<nCount; ++ i)
+    {
+        bResult = ParseFile(m_arrFiles[i]) && bResult;
+    }
+    return bResult;
 }
 
 const SxSList& CSxSParser::GetSxSList() const
