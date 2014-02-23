@@ -277,6 +277,7 @@ public:
     void EnableStep3(BOOL bEnable)
     {
         GetDlgItem(IDC_BTN_EXPORT).EnableWindow(bEnable);
+        GetDlgItem(IDC_BTN_REFRESH).EnableWindow(bEnable);
     }
 
     void GenerateTree()
@@ -336,6 +337,7 @@ public:
         m_WndLayout.AddControlById(IDC_EDIT_EXPORT_PATH, Layout_Bottom | Layout_HFill);
         m_WndLayout.AddControlById(IDC_BTN_BROWSE, Layout_Bottom | Layout_Right);
         m_WndLayout.AddControlById(IDC_BTN_EXPORT, Layout_Bottom | Layout_Right);
+        m_WndLayout.AddControlById(IDC_BTN_REFRESH, Layout_Top | Layout_Right);
     }
 
 private:

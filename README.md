@@ -26,3 +26,10 @@ In most case, that means you need to publish sxs or crt or assembly or side-by-s
 **More**
 
 see [WIKI](https://github.com/hufuman/sxshacker/wiki)
+
+
+Screenshot:
+===========
+
+![image](https://github.com/hufuman/sxshacker/raw/master/snapshot.png)
+
