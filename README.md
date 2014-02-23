@@ -18,12 +18,14 @@ In most case, that means you need to publish sxs or crt or assembly or side-by-s
 **SxSHacker** is used to find all proper stuff for you software.
 
 
-**Downloads**:
+Downloads:
+==========
 
 [Latest version 32-bit](https://github.com/hufuman/sxshacker/blob/master/sxshacker_x32.exe?raw=true)
 
 
-**More**
+More
+==========
 
 see [WIKI](https://github.com/hufuman/sxshacker/wiki)
 
