@@ -240,7 +240,7 @@ public:
         {
             CString strMsg;
             strMsg.LoadString(IDS_MSG_NO_DEPENDENCIES);
-            MessageBox(strMsg, m_strAppName, MB_OK | MB_ICONERROR);
+            MessageBox(strMsg, m_strAppName, MB_OK | MB_ICONINFORMATION);
             return 0;
         }
 

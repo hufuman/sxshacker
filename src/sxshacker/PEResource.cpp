@@ -24,6 +24,9 @@ BOOL CPEResource::Open(CString strPEPath)
 
 BOOL CPEResource::GetManifest(LPVOID& pManifest, DWORD& dwLength)
 {
+    pManifest = NULL;
+    dwLength = 0;
+
     if(m_hManifest == NULL)
     {
         int nPos = m_strPEPath.ReverseFind(_T('.'));
@@ -37,7 +40,7 @@ BOOL CPEResource::GetManifest(LPVOID& pManifest, DWORD& dwLength)
             m_hManifest = ::FindResource(m_hModule, MAKEINTRESOURCE(2), RT_MANIFEST);
     }
     if(m_hManifest == NULL)
-        return FALSE;
+        return TRUE;
 
     HGLOBAL hGlobal = ::LoadResource(m_hModule, m_hManifest);
     if(hGlobal == NULL)

@@ -54,6 +54,9 @@ BOOL CSxSParser::ParseFile(LPCTSTR szFilePath)
     if(!res.GetManifest(pData, dwLength))
         return FALSE;
 
+    if(pData == NULL)
+        return TRUE;
+
     CStringA strManifest;
     LPSTR pManifest = strManifest.GetBufferSetLength(dwLength);
     memcpy(pManifest, pData, dwLength);
